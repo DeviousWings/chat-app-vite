@@ -12,3 +12,5 @@ export const Input = forwardRef<
     />
   )
 })
+
+//props being past are what you can pass in normal elements
