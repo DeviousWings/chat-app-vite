@@ -8,5 +8,5 @@ import { userRoutes } from "./routes/users"
 const app = fastify()
 app.register(cors, { origin: process.env.CLIENT_URL })
 app.register(userRoutes)
-
+console.log("Server chat-app-bo is running")
 app.listen({ port: parseInt(process.env.PORT!) })

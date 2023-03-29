@@ -4,6 +4,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query/build/lib/types"
 import axios, { AxiosResponse } from "axios"
+import { type } from "os"
 import {
   createContext,
   ReactNode,
@@ -35,10 +36,6 @@ export function useAuth() {
   return useContext(Context) as AuthContext
 }
 
-export function useLoggedInAuth() {
-  return useContext(Context) as AuthContext &
-    Required<Pick<AuthContext, "user">>
-}
 
 type AuthProviderProps = {
   children: ReactNode
@@ -46,9 +43,7 @@ type AuthProviderProps = {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const navigate = useNavigate()
-  const [user, setUser] = useLocalStorage<User>("user")
-  const [token, setToken] = useLocalStorage<string>("token")
-  const [streamChat, setStreamChat] = useState<StreamChat>()
+}
 
   const signup = useMutation({
     mutationFn: (user: User) => {
@@ -59,56 +54,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     },
   })
 
-  const login = useMutation({
-    mutationFn: (id: string) => {
-      return axios
-        .post(`${import.meta.env.VITE_SERVER_URL}/login`, { id })
-        .then(res => {
-          return res.data as { token: string; user: User }
-        })
-    },
-    onSuccess(data) {
-      setUser(data.user)
-      setToken(data.token)
+
+ export function AuthProviderProps ({ children }: AuthProviderProps) {
+  const signup = useMutation({
+    mutationFn: (user: User) => {
+      return axios.post(`${import.meta.env.VITE_SERVER_URL}/signup`, user)
     },
   })
-
-  const logout = useMutation({
-    mutationFn: () => {
-      return axios.post(`${import.meta.env.VITE_SERVER_URL}/logout`, { token })
-    },
-    onSuccess() {
-      setUser(undefined)
-      setToken(undefined)
-      setStreamChat(undefined)
-    },
-  })
-
-  useEffect(() => {
-    if (token == null || user == null) return
-    const chat = new StreamChat(import.meta.env.VITE_STREAM_API_KEY!)
-
-    if (chat.tokenManager.token === token && chat.userID === user.id) return
-
-    let isInterrupted = false
-    const connectPromise = chat.connectUser(user, token).then(() => {
-      if (isInterrupted) return
-      setStreamChat(chat)
-    })
-
-    return () => {
-      isInterrupted = true
-      setStreamChat(undefined)
-
-      connectPromise.then(() => {
-        chat.disconnectUser()
-      })
-    }
-  }, [token, user])
-
-  return (
-    <Context.Provider value={{ signup, login, user, streamChat, logout }}>
-      {children}
-    </Context.Provider>
-  )
+  return <Context.Provider value={{ signup }}>{children}</Context.Provider>
 }
