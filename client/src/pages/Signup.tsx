@@ -38,6 +38,7 @@ export function Signup() {
         <Input id="imageUrl" type="url" ref={imageUrlRef} />
 
         <Button
+          type="submit"
 
         >Sign Up
 
@@ -48,6 +49,5 @@ export function Signup() {
 }
 
 // disabled={signup.isLoading}
-// type="submit"
 // className="col-span-full"
 // {signup.isLoading ? "Loading.." : "Sign Up"}
